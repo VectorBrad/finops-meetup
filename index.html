@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinOps Meetup Toronto — Register</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background-color: #050a12;
+      background-image: url('https://images.unsplash.com/photo-1517935706615-2717063c2225?w=1920&q=85');
+      background-size: cover;
+      background-position: center 50%;
+      background-attachment: fixed;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 40px 20px 40px 6%;
+    }
+
+    /* dark gradient overlay over the photo */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(
+        160deg,
+        rgba(2, 8, 20, 0.55) 0%,
+        rgba(4, 14, 35, 0.48) 50%,
+        rgba(2, 8, 20, 0.60) 100%
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 480px;
+      background: rgba(0, 80, 110, 0.50);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(0, 210, 255, 0.25);
+      border-radius: 4px;
+      padding: 52px 48px 48px;
+      box-shadow:
+        0 0 0 1px rgba(0, 210, 255, 0.06),
+        0 32px 64px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    /* top accent line */
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #00d2ff, #7b2fff, transparent);
+      border-radius: 4px 4px 0 0;
+    }
+
+    .event-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #00d2ff;
+      margin-bottom: 20px;
+      opacity: 0.85;
+    }
+
+    h1 {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 40px;
+      font-weight: 300;
+      letter-spacing: 0.02em;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.7rem;
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 100%;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 3px;
+      padding: 13px 16px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem;
+      color: #fff;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    input::placeholder {
+      color: rgba(255,255,255,0.35);
+    }
+
+    input:focus {
+      border-color: rgba(0, 210, 255, 0.5);
+      background: rgba(0, 210, 255, 0.04);
+      box-shadow: 0 0 0 3px rgba(0, 210, 255, 0.08);
+    }
+
+    .submit-btn {
+      width: 100%;
+      margin-top: 32px;
+      padding: 15px;
+      background: transparent;
+      border: 1px solid rgba(0, 210, 255, 0.5);
+      border-radius: 3px;
+      color: #00d2ff;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s, border-color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .submit-btn:hover {
+      background: rgba(0, 210, 255, 0.1);
+      border-color: #00d2ff;
+      box-shadow: 0 0 24px rgba(0, 210, 255, 0.2);
+      color: #fff;
+    }
+
+    .submit-btn:active {
+      transform: translateY(1px);
+    }
+
+    /* success state */
+    .success-msg {
+      display: none;
+      text-align: center;
+      padding: 24px 0 8px;
+    }
+
+    .success-msg .checkmark {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+    }
+
+    .success-msg h2 {
+      font-size: 1.3rem;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .success-msg p {
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .divider {
+      height: 1px;
+      background: rgba(255,255,255,0.12);
+      margin: 36px 0 20px;
+    }
+
+    .footer-note {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.4);
+      text-align: center;
+      letter-spacing: 0.05em;
+    }
+
+    @media (max-width: 540px) {
+      .card { padding: 40px 28px 36px; }
+      h1 { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1 style="color: #00d2ff;">Toronto FinOps Meetup</h1>
+    <p class="subtitle">Reserve your spot. We'll handle the rest.</p>
+
+    <form id="reg-form" action="https://formspree.io/f/xreavpvp" method="POST">
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" name="name" placeholder="First and last name" required />
+      </div>
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" placeholder="you@company.com" required />
+      </div>
+      <div class="form-group">
+        <label for="company">Company</label>
+        <input type="text" id="company" name="company" placeholder="Your organization" />
+      </div>
+      <div class="form-group">
+        <label for="phone">Emergency Phone</label>
+        <input type="tel" id="phone" name="phone" placeholder="+1 (416) 000-0000" />
+      </div>
+
+      <button type="submit" class="submit-btn">Register</button>
+    </form>
+
+    <div class="success-msg" id="success">
+      <h2 style="font-size: 1.8rem;">You're registered.</h2>
+      <p style="margin-bottom:16px;">We look forward to seeing you.</p>
+      <div id="venue-map" style="width:100%;height:180px;border-radius:3px;overflow:hidden;margin-bottom:10px;"></div>
+      <p style="font-size:0.75rem;opacity:0.55;letter-spacing:0.03em;margin-bottom:12px;">PointClickCare — 8 Spadina Ave, Suite 1400 · Toronto, ON</p>
+      <a href="https://www.google.com/maps/dir/?api=1&destination=8+Spadina+Ave,+Toronto,+ON+M5V+0S8" target="_blank" style="display:block;width:100%;padding:11px;text-align:center;border:1px solid rgba(0,210,255,0.4);border-radius:3px;color:#00d2ff;font-family:'Space Mono',monospace;font-size:0.75rem;letter-spacing:0.18em;text-transform:uppercase;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='rgba(0,210,255,0.08)'" onmouseout="this.style.background='transparent'">Get Directions ↗</a>
+    </div>
+
+    <div class="divider"></div>
+    <p class="footer-note">Toronto FinOps Meetup &nbsp;·&nbsp; Information collected for event coordination only</p>
+  </div>
+
+  <script>
+    const form = document.getElementById('reg-form');
+    const success = document.getElementById('success');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = new FormData(form);
+      const res = await fetch(form.action, {
+        method: 'POST',
+        body: data,
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        form.style.display = 'none';
+        success.style.display = 'block';
+        const venueMap = L.map('venue-map', { zoomControl: false, scrollWheelZoom: false, dragging: false });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap', maxZoom: 18
+        }).addTo(venueMap);
+        const coords = [43.6431932, -79.3944576];
+        venueMap.setView(coords, 15);
+        L.marker(coords).addTo(venueMap).bindPopup('8 Spadina Ave, Suite 1400').openPopup();
+      }
+    });
+  </script>
+
+</body>
+</html>
