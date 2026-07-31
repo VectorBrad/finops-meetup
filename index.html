@@ -236,10 +236,13 @@
 
     <button type="button" id="venue-btn" class="submit-btn" style="margin-top:14px;">Venue &amp; Directions</button>
 
-    <div id="venue-panel" style="display:none; padding-top:20px;">
-      <div id="venue-panel-map" style="width:100%;height:180px;border-radius:3px;overflow:hidden;margin-bottom:10px;"></div>
-      <p style="font-size:0.75rem;opacity:0.55;letter-spacing:0.03em;margin-bottom:12px;">PointClickCare — 8 Spadina Ave, Suite 1400 · Toronto, ON</p>
-      <a href="https://www.google.com/maps/dir/?api=1&destination=8+Spadina+Ave,+Toronto,+ON+M5V+0S8" target="_blank" style="display:block;width:100%;padding:11px;text-align:center;border:1px solid rgba(0,210,255,0.4);border-radius:3px;color:#00d2ff;font-family:'Space Mono',monospace;font-size:0.75rem;letter-spacing:0.18em;text-transform:uppercase;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='rgba(0,210,255,0.08)'" onmouseout="this.style.background='transparent'">Get Directions ↗</a>
+    <div id="venue-modal-backdrop" style="display:none; position:fixed; inset:0; background:rgba(2,8,20,0.75); z-index:10; align-items:center; justify-content:center; padding:20px;">
+      <div id="venue-modal" style="position:relative; width:100%; max-width:380px; background:#08131f; border:1px solid rgba(0,210,255,0.25); border-radius:4px; padding:28px 24px 24px; box-shadow:0 32px 64px rgba(0,0,0,0.5);">
+        <button type="button" id="venue-modal-close" aria-label="Close" style="position:absolute; top:10px; right:10px; background:none; border:none; color:rgba(255,255,255,0.5); font-size:1.3rem; line-height:1; cursor:pointer; padding:6px;">&times;</button>
+        <div id="venue-panel-map" style="width:100%;height:180px;border-radius:3px;overflow:hidden;margin-bottom:10px;"></div>
+        <p style="font-size:0.75rem;opacity:0.55;letter-spacing:0.03em;margin-bottom:12px;">PointClickCare — 8 Spadina Ave, Suite 1400 · Toronto, ON</p>
+        <a href="https://www.google.com/maps/dir/?api=1&destination=8+Spadina+Ave,+Toronto,+ON+M5V+0S8" target="_blank" style="display:block;width:100%;padding:11px;text-align:center;border:1px solid rgba(0,210,255,0.4);border-radius:3px;color:#00d2ff;font-family:'Space Mono',monospace;font-size:0.75rem;letter-spacing:0.18em;text-transform:uppercase;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='rgba(0,210,255,0.08)'" onmouseout="this.style.background='transparent'">Get Directions ↗</a>
+      </div>
     </div>
 
     <div class="success-msg" id="success">
@@ -260,7 +263,9 @@
     const form = document.getElementById('reg-form');
     const success = document.getElementById('success');
     const venueBtn = document.getElementById('venue-btn');
-    const venuePanel = document.getElementById('venue-panel');
+    const venueBackdrop = document.getElementById('venue-modal-backdrop');
+    const venueModal = document.getElementById('venue-modal');
+    const venueClose = document.getElementById('venue-modal-close');
     const VENUE_COORDS = [43.6431932, -79.3944576];
 
     function renderVenueMap(elementId) {
@@ -270,16 +275,29 @@
       }).addTo(map);
       map.setView(VENUE_COORDS, 15);
       L.marker(VENUE_COORDS).addTo(map).bindPopup('8 Spadina Ave, Suite 1400').openPopup();
+      return map;
     }
 
-    let venuePanelMapLoaded = false;
-    venueBtn.addEventListener('click', () => {
-      const isHidden = venuePanel.style.display === 'none';
-      venuePanel.style.display = isHidden ? 'block' : 'none';
-      if (isHidden && !venuePanelMapLoaded) {
-        renderVenueMap('venue-panel-map');
-        venuePanelMapLoaded = true;
+    let venuePanelMap = null;
+    function openVenueModal() {
+      venueBackdrop.style.display = 'flex';
+      if (!venuePanelMap) {
+        venuePanelMap = renderVenueMap('venue-panel-map');
+      } else {
+        venuePanelMap.invalidateSize();
       }
+    }
+    function closeVenueModal() {
+      venueBackdrop.style.display = 'none';
+    }
+
+    venueBtn.addEventListener('click', openVenueModal);
+    venueClose.addEventListener('click', closeVenueModal);
+    venueBackdrop.addEventListener('click', (e) => {
+      if (e.target === venueBackdrop) closeVenueModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeVenueModal();
     });
 
     form.addEventListener('submit', async (e) => {
